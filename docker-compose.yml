@@ -1,0 +1,13 @@
+version: '2.1'
+
+services:
+  nest-starter:
+    image: nest-starter
+    build: .
+    volumes:
+      - ./src:/app/src
+    environment:
+      - NODE_ENV=development
+      - SERVICE_NAME=nest-starter
+    ports:
+      - 3002:3000
