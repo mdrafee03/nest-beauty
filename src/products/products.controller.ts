@@ -13,10 +13,10 @@ export class ProductsController {
     return { id: generatedId };
   }
 
-  // @Get()
-  // getAllProduct() {
-  //    return { data: this.productsService.getProducts()};
-  // }
+  @Get()
+  async getAllProduct() {
+     return { data: await this.productsService.getProducts()};
+  }
 
   // @Get(':id')
   // GetProduct(@Param('id') id: string) {

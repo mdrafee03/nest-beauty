@@ -9,15 +9,16 @@ export class ProductsService {
   prodId = 0
 
   constructor(@InjectModel('Product') private readonly productModel: Model<Product>) { }
+
   async insertProduct(title: string, desc: string, price: number) {
     const newProduct = new this.productModel({ title, description: desc, price });
     const result = await newProduct.save();
-    // console.log(result);
     return result.id as string;
   }
-  // getProducts() {
-  //   return [...this.products];
-  // }
+  async getProducts() {
+    const products= await this.productModel.find().exec();
+    return products.map((prod: Product) => ({id: prod.id, title: prod.price, description: prod.description, price: prod.price})) as Product[];
+  }
   // getProduct(id: number) {
   //   const product = this.findProduct(id)[0];
   //   return { ...product };
