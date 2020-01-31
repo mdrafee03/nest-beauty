@@ -15,30 +15,40 @@ export class ProductsService {
     const result = await newProduct.save();
     return result.id as string;
   }
-  async getProducts() {
-    const products= await this.productModel.find().exec();
-    return products.map((prod: Product) => ({id: prod.id, title: prod.price, description: prod.description, price: prod.price})) as Product[];
-  }
-  // getProduct(id: number) {
-  //   const product = this.findProduct(id)[0];
-  //   return { ...product };
-  // }
-  // updateProduct(id: number, title: string, description: string, price: number) {
-  //   const [product, index] = this.findProduct(id);
 
-  //   const updatedProduct = { ...product };
-  //   if (title) {
-  //     updatedProduct.title = title;
-  //   }
-  //   if (description) {
-  //     updatedProduct.description = description;
-  //   }
-  //   if (price) {
-  //     updatedProduct.price = price;
-  //   }
-  //   this.products[index] = updatedProduct;
-  //   return { ...updatedProduct };
-  // }
+  async getProducts(): Promise<Product[]> {
+    const products = await this.productModel.find().exec();
+    return products.map((prod: Product) => ({ id: prod.id, title: prod.price, description: prod.description, price: prod.price }));
+  }
+
+  async getProduct(id: string): Promise<Product> {
+    let product: Product;
+    try {
+      product = await this.productModel.findById(id).exec();
+      return { id: product.id, title: product.title, description: product.description, price: product.price };
+    } catch {
+      throw new NotFoundException('Could not find product');
+    }
+
+  }
+
+  async updateProduct(id: string, title: string, description: string, price: number): Promise<Product> {
+    let updatedProduct = await this.getProduct(id);
+
+    if (title) {
+      updatedProduct.title = title;
+    }
+    if (description) {
+      updatedProduct.description = description;
+    }
+    if (price) {
+      updatedProduct.price = price;
+    }
+    
+    await this.productModel.updateOne({ '_id': id }, { $set: { 'title': title, 'description': description, 'price': price } });
+    return await this.getProduct(id);
+    // return { id: product.id, title: product.title, description: product.description, price: product.price };
+  }
   // deleteProduct(id: number) {
   //   const index = this.findProduct(id)[1];
   //   return this.products.splice(index, 1);
