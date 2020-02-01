@@ -5,8 +5,6 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class ProductsService {
-  private products: Product[] = [];
-  prodId = 0
 
   constructor(@InjectModel('Product') private readonly productModel: Model<Product>) { }
 
@@ -16,23 +14,31 @@ export class ProductsService {
     return result.id as string;
   }
 
-  async getProducts(): Promise<Product[]> {
+  async getProducts() {
     const products = await this.productModel.find().exec();
-    return products.map((prod: Product) => ({ id: prod.id, title: prod.price, description: prod.description, price: prod.price }));
+    return products.map((prod: Product) => ({ id: prod.id, title: prod.title, description: prod.description, price: prod.price }));
+
   }
 
   async getProduct(id: string): Promise<Product> {
     let product: Product;
     try {
       product = await this.productModel.findById(id).exec();
-      return { id: product.id, title: product.title, description: product.description, price: product.price };
     } catch {
       throw new NotFoundException('Could not find product');
     }
-
+    if (!product) {
+      throw new NotFoundException('Could not find product');
+    }
+    return product;
   }
 
-  async updateProduct(id: string, title: string, description: string, price: number): Promise<Product> {
+  async getSingleProduct(productId: string) {
+    const product = await this.getProduct(productId);
+    return { id: product.id, title: product.title, description: product.description, price: product.price };
+  }
+
+  async updateProduct(id: string, title: string, description: string, price: number) {
     let updatedProduct = await this.getProduct(id);
 
     if (title) {
@@ -45,22 +51,13 @@ export class ProductsService {
       updatedProduct.price = price;
     }
     
-    await this.productModel.updateOne({ '_id': id }, { $set: { 'title': title, 'description': description, 'price': price } });
-    return await this.getProduct(id);
-    // return { id: product.id, title: product.title, description: product.description, price: product.price };
+    updatedProduct.save();
   }
-  // deleteProduct(id: number) {
-  //   const index = this.findProduct(id)[1];
-  //   return this.products.splice(index, 1);
-  // }
 
-  // private findProduct(id: number): [Product, number] {
-  //   const prodIndex = this.products.findIndex(product => product.id === id);
-  //   const product = this.products[prodIndex];
-
-  //   if (!product) {
-  //     throw new NotFoundException('Could not find product');
-  //   }
-  //   return [product, prodIndex];
-  // }
+  async deleteProduct(id: string) {
+    const result = await this.productModel.deleteOne({_id: id}).exec();
+    if (result.n === 0) {
+      throw new NotFoundException('Could not find product');
+    }
+  }
 }

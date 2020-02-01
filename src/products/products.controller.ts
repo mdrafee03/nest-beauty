@@ -15,12 +15,12 @@ export class ProductsController {
 
   @Get()
   async getAllProduct() {
-     return { data: await this.productsService.getProducts()};
+    return { data: await this.productsService.getProducts() };
   }
 
   @Get(':id')
   async GetProduct(@Param('id') id: string) {
-    return await this.productsService.getProduct(id);
+    return await this.productsService.getSingleProduct(id);
   }
 
   @Patch(':id')
@@ -29,11 +29,17 @@ export class ProductsController {
     @Body('title') prodTitle: string,
     @Body('description') prodDescription: string,
     @Body('price') prodPrice: number
-    ) {
-    return await this.productsService.updateProduct(prodId, prodTitle, prodDescription, prodPrice);
+  ) {
+    try {
+      await this.productsService.updateProduct(prodId, prodTitle, prodDescription, prodPrice);
+      return 'prodcut updated';
+    } catch (error) {
+      return error;
+    }
   }
-  // @Delete(':id')
-  // DeleteProduct(@Param('id') prodId: string) {
-  //   return this.productsService.deleteProduct(Number(prodId));
-  // }
+  @Delete(':id')
+  async DeleteProduct(@Param('id') prodId: string) {
+    await this.productsService.deleteProduct(prodId);
+    return 'Product deleted'
+  }
 }
